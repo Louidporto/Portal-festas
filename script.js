@@ -1,12 +1,12 @@
 // 1. CONFIGURAÇÃO FIREBASE (Substitua pelos seus dados se necessário)
 const firebaseConfig = {
-    apiKey: "AIzaSyD-m-zKJEmhi9GJ-52VZ_tMjFUVELQz4VQ",
-    authDomain: "camaelasticaapp.firebaseapp.com",
-    databaseURL: "https://camaelasticaapp-default-rtdb.firebaseio.com", 
-    projectId: "camaelasticaapp",
-    storageBucket: "camaelasticaapp.firebasestorage.app",
-    messagingSenderId: "995476566915",
-    appId: "1:995476566915:web:ceb35ea886fedb9a4d7cb6"
+    apiKey: "AIzaSyDqvL385sGpFEBjvMyjTdvpIFqPPqBA4dg",
+    authDomain: "alugueis-da-camila.firebaseapp.com",
+    databaseURL: "https://alugueis-da-camila-default-rtdb.firebaseio.com/", // O link que você mandou!
+    projectId: "alugueis-da-camila",
+    storageBucket: "alugueis-da-camila.firebasestorage.app",
+    messagingSenderId: "341701622237",
+    appId: "1:341701622237:web:d389d6db839f1f4528de34"
 };
 
 firebase.initializeApp(firebaseConfig);
