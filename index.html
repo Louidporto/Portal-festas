@@ -6,6 +6,7 @@
     <title>Painel Administrativo - Portal Festas CTG</title>
     <link rel="stylesheet" href="style2.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <header>
@@ -24,6 +25,9 @@
         <button class="tab-btn" onclick="abrirAba(event, 'aba-historico')">
             <i class="fas fa-history"></i> <span>Histórico</span>
         </button>
+        <button class="tab-btn" onclick="abrirAba(event, 'aba-financeiro')">
+            <i class="fas fa-chart-line"></i> <span>Financeiro</span>
+        </button>
     </nav>
 </header>
 
@@ -40,7 +44,6 @@
         <div class="header-aba">
             <div>
                 <h2>Pendentes de Aprovação</h2>
-                <p style="font-size: 0.8em; color: #666;">Confirme para reservar a data automaticamente.</p>
             </div>
         </div>
         <div id="lista-solicitacoes-pendentes" class="grid-layout"></div>
@@ -48,16 +51,58 @@
 
     <div id="aba-agendamentos" class="tab-content aba-agenda">
         <div class="header-aba">
-            <h2>Datas Ocupadas</h2>
+            <h2>Datas Ocupadas / Ativas</h2>
         </div>
         <div id="grid-reservas" class="grid-layout"></div>
     </div>
+
     <div id="aba-historico" class="tab-content">
         <div class="header-aba">
             <h2>Histórico de Locações</h2>
         </div>
-    <div id="grid-historico" class="grid-layout"></div>
-</div>
+        <div id="grid-historico" class="grid-layout"></div>
+    </div> 
+
+    <div id="aba-financeiro" class="tab-content">
+        <div class="header-aba">
+            <div>
+                <h2><i class="fas fa-chart-line"></i> Painel Financeiro</h2>
+                <p style="font-size: 0.8em; color: #666;">Relatório de locações finalizadas e faturamento.</p>
+            </div>
+            <div class="filtros-financas">
+                <input type="month" id="filtro-mes-financeiro" onchange="carregarRelatorioFinanceiro()" class="input-moderno">
+                <button onclick="limparFiltroFinancas()" class="btn-secundario">Ver Tudo</button>
+            </div>
+        </div>
+
+        <div class="cards-financeiros">
+            <div class="card-fin faturamento">
+                <span>Faturamento no Período</span><br>
+                <strong id="faturamento-valor">R$ 0,00</strong>
+            </div>
+            <div class="card-fin concluidas">
+                <span>Locações Concluídas</span><br>
+                <strong id="total-concluidas">0</strong>
+            </div>
+        </div>
+
+        <div class="container-grafico">
+            <canvas id="graficoDesempenho"></canvas>
+        </div>
+
+        <div class="tabela-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Qtd. Locações</th>
+                        <th>Total Rendido</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-corpo-financas"></tbody>
+            </table>
+        </div>
+    </div>
 </main>
 
 <div id="modal-cadastro" class="modal">
@@ -66,28 +111,47 @@
         <h2><i class="fas fa-plus-circle"></i> Cadastrar Produto</h2>
         <form id="form-cadastro">
             <div class="campo-grupo">
-                <label>Nome do Brinquedo</label>
-                <input type="text" id="nome-brinquedo" required>
+                <label>Nome do Item</label>
+                <input type="text" id="nome-brinquedo" placeholder="Ex: PULA PULA" required>
             </div>
             <div class="campo-grupo">
                 <label>Link da Foto (URL)</label>
                 <input type="url" id="imagem-brinquedo" placeholder="http://...">
             </div>
             <div class="campo-grupo">
-                <label>Descrição</label>
-                <textarea id="descricao-brinquedo"></textarea>
+                <label>Descrição/Caracteristicas</label>
+                <textarea id="descricao-brinquedo" placeholder="Ex: 2,44 Metros"></textarea>
             </div>
+            
             <div style="display: flex; gap: 10px;">
                 <div class="campo-grupo" style="flex:1">
                     <label>Valor R$</label>
-                    <input type="number" id="valor-brinquedo">
+                    <input type="text" id="valor-brinquedo" placeholder="0,00">
                 </div>
                 <div class="campo-grupo" style="flex:1">
                     <label>WhatsApp</label>
-                    <input type="tel" id="whatsapp-dono">
+                    <input type="tel" id="whatsapp-dono" placeholder="Apenas números">
                 </div>
             </div>
-            <button type="submit" class="btn-acao-principal">Salvar Produto</button>
+
+            <div class="campo-grupo">
+                <label for="prod-categoria">Categoria:</label>
+                <select id="prod-categoria" style="width: 100%;">
+                    <option value="Brinquedos">Brinquedos</option>
+                    <option value="Itens de Decoração">Itens de Decoração</option>
+                    <option value="Eletrônicos">Eletrônicos</option>
+                    <option value="Infláveis">Infláveis</option>
+                    <option value="Jogos">Jogos</option>
+                    <option value="Mesas e Cadeiras">Mesas e Cadeiras</option>   
+                </select>
+            </div>
+
+            <div class="campo-grupo">
+                <label for="prod-estoque">Quantidade em Estoque:</label>
+                <input type="number" id="prod-estoque" min="1" value="1">
+            </div>
+
+            <button type="submit" class="btn-acao-principal" style="width: 100%;">Salvar Produto</button>
         </form>
     </div>
 </div>
