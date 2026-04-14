@@ -79,9 +79,9 @@ function carregarProdutos() {
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
-
-                        <p>Status: <strong>${p.status || 'ativo'}</strong></p>
-                        <p>Estoque Total: <strong>${p.estoque_total || 0}</strong></p>
+                            <p style="font-size: 0.8rem; color: #777; margin-bottom: 8px;">${p.descricao || ''}</p>
+                            <p>Status: <strong>${p.status || 'ativo'}</strong></p>
+                            <p>Estoque Total: <strong>${p.estoque_total || 0}</strong></p>
                         <div class="valor-tag">R$ ${p.valor || '0,00'}</div>
 
                         <button onclick="alternarStatusProduto('${id}', '${p.status}')" class="btn-secundario" style="width:100%; margin-top:10px;">
@@ -110,6 +110,7 @@ document.getElementById('form-cadastro').addEventListener('submit', (e) => {
     
     const nome = document.getElementById('nome-brinquedo').value;
     const imagem = document.getElementById('imagem-brinquedo').value;
+    const descricao = document.getElementById('descricao-brinquedo');
     const valorRaw = document.getElementById('valor-brinquedo').value;
     const categoria = document.getElementById('prod-categoria').value; 
     const estoqueTotal = parseInt(document.getElementById('prod-estoque').value) || 1;
@@ -120,6 +121,7 @@ document.getElementById('form-cadastro').addEventListener('submit', (e) => {
     const novoProduto = {
         nome: nome,
         imagem: imagem,
+        descricao: descricao, // ADICIONADO ao objeto que vai para o Firebase
         valor: valorNumerico,
         categoria: categoria,
         estoque_total: estoqueTotal,
@@ -128,10 +130,13 @@ document.getElementById('form-cadastro').addEventListener('submit', (e) => {
     };
 
     database.ref('produtos').push(novoProduto).then(() => {
-        alert("Produto cadastrado com sucesso!");
-        fecharModal();
-        document.getElementById('form-cadastro').reset();
-    });
+            alert("Produto cadastrado com sucesso!");
+            fecharModal();
+            document.getElementById('form-cadastro').reset();
+        }).catch(error => {
+            console.error("Erro ao cadastrar:", error);
+            alert("Erro ao salvar o produto.");
+        });
 });
 
 // ================================================================
@@ -178,6 +183,8 @@ function carregarSolicitacoes() {
                     const tel = s.telefone_cliente || s.cliente_fone || s.whatsapp || "";
                     const nomeCliente = s.nome_cliente || s.cliente_nome || "Cliente";
                     const endereco = s.endereco_completo || s.cliente_endereco || "Não informado";
+                    const descExibicao = (p && p.descricao) || s.descricao || "";
+                    const qtdSolicitada = s.quantidade_alugada || 1;
 
                     // 3. Criação dos Links (WhatsApp e Google Maps)
                     const linkWhats = `https://wa.me/55${tel.replace(/\D/g, '')}`;
@@ -194,10 +201,19 @@ function carregarSolicitacoes() {
                                 </div>
 
                                 <h3>${s.nome_produto || 'Produto'}</h3>
-                                
+
+                                <p style="margin: 10px 0;">
+                                        <span style="background: #eee; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #333;">
+                                            <i class="fas fa-layer-group"></i> Qtd: ${qtdSolicitada}
+                                        </span>
+                                </p>
+                                                                
                                 <div class="contato-cliente">
                                     <p><strong><i class="fas fa-user"></i></strong> ${nomeCliente}</p>
-                                    
+                                    <p style="font-size: 0.85rem; color: #666; margin: 5px 0 10px 0; line-height: 1.2;">
+                                    ${descExibicao}
+                                    </p>
+                                  
                                     <p>
                                         <strong><i class="fas fa-map-marker-alt" style="color: #e74c3c;"></i></strong> 
                                         <a href="${linkMapa}" target="_blank" class="link-endereco" title="Abrir no Google Maps" style="text-decoration: none; color: #2980b9; font-weight: bold;">
@@ -275,7 +291,8 @@ function carregarAgenda() {
                     const tel = res.whatsapp || res.telefone_cliente || "";
                     const nomeCliente = res.cliente || res.nome_cliente || "Cliente";                    
                     const endereco = res.endereco || res.endereco_completo || res.cliente_endereco || "Endereço não encontrado";
-
+                    const descExibicao = (p && p.descricao) || res.descricao || "";
+                    const qtdAlugada = res.quantidade_alugada || 1;
                     // 2. Criação dos Links Clicáveis
                     const linkMapa = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`;
                     const linkWhats = `https://wa.me/55${tel.replace(/\D/g, '')}`;
@@ -286,6 +303,15 @@ function carregarAgenda() {
                             <div class="conteudo-card">
                                 <span class="tag-categoria">RESERVA ATIVA</span>
                                 <h3>${res.nome_produto || 'Produto'}</h3>
+                                <p style="font-size: 0.85rem; color: #666; margin: 5px 0 10px 0; line-height: 1.2;">
+                                    ${descExibicao}
+                                </p>
+
+                                <p style="margin: 10px 0;">
+                                    <span style="background: #eee; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #333;">
+                                        <i class="fas fa-layer-group"></i> Qtd: ${qtdAlugada}
+                                    </span>
+                                </p>
                                 
                                 <div class="contato-cliente">
                                     <p><strong><i class="fas fa-user"></i></strong> ${nomeCliente}</p>
@@ -406,6 +432,7 @@ function aprovarSolicitacao(idSolicitacao) {
         const novoAgendamento = {
             produto_id: dados.produto_id || "",
             nome_produto: dados.nome_produto || "Produto",
+            quantidade_alugada: dados.quantidade_alugada || 1, // REPASSANDO A QUANTIDADE
             data_inicio: dados.data_inicio,
             data_fim: dados.data_fim,
             cliente: dados.nome_cliente || dados.cliente_nome || "Cliente",
@@ -424,7 +451,7 @@ function aprovarSolicitacao(idSolicitacao) {
             });
 
             // 2. MONTAGEM DA MENSAGEM DO WHATSAPP
-            const msg = `Olá *${novoAgendamento.cliente}*! Sua reserva do item *${novoAgendamento.nome_produto}* foi *APROVADA*! 🎉%0A%0A` +
+            const msg = `Olá *${novoAgendamento.cliente}*! Sua reserva de *${novoAgendamento.quantidade_alugada}x ${novoAgendamento.nome_produto}* foi *APROVADA*!🎉%0A%0A` +
                         `*Período:* ${novoAgendamento.data_inicio.split('-').reverse().join('/')} até ${novoAgendamento.data_fim.split('-').reverse().join('/')}%0A` +
                         `*Endereço:* ${novoAgendamento.endereco}%0A%0A` +
                         `Já estamos preparando tudo por aqui!`;
@@ -489,44 +516,53 @@ function carregarRelatorioFinanceiro() {
         }
 
         let faturamentoTotal = 0;
-        let qtdTotal = 0;
+        let qtdTotalContratos = 0;
         let produtosResumo = {};
 
         Object.keys(dados).forEach(id => {
             const h = dados[id];
             
-            // Filtro de data
+            // 1. Filtro de Mês/Ano
             if (h.data_finalizacao) {
                 const dataFinalizacao = new Date(h.data_finalizacao);
                 const mesAnoFinalizado = dataFinalizacao.toISOString().substring(0, 7);
                 if (mesFiltro && mesAnoFinalizado !== mesFiltro) return;
             }
 
-            // CORREÇÃO AQUI: Tenta ler valor_produto, se não houver, tenta h.valor
-            const valor = parseFloat(h.valor_produto) || parseFloat(h.valor) || 0;
+            // 2. CÁLCULO LOGÍSTICO (Valor x Qtd x Dias)
+            const valorDiaria = parseFloat(h.valor_produto) || 0;
+            const qtdItens = parseInt(h.quantidade_alugada) || 1;
             
-            faturamentoTotal += valor;
-            qtdTotal++;
+            // Cálculo de dias (Diferença entre datas)
+            const dataInis = new Date(h.data_inicio);
+            const dataFims = new Date(h.data_fim);
+            const diferencaTempo = Math.abs(dataFims - dataInis);
+            const totalDias = Math.ceil(diferencaTempo / (1000 * 60 * 60 * 24)) + 1; // +1 para incluir o dia de início
 
+            // O VALOR REAL DO CONTRATO
+            const valorTotalContrato = valorDiaria * qtdItens * totalDias;
+            
+            faturamentoTotal += valorTotalContrato;
+            qtdTotalContratos++;
+
+            // 3. Agrupamento para o Gráfico
             if (!produtosResumo[h.nome_produto]) {
                 produtosResumo[h.nome_produto] = { qtd: 0, total: 0 };
             }
-            produtosResumo[h.nome_produto].qtd++;
-            produtosResumo[h.nome_produto].total += valor;
+            produtosResumo[h.nome_produto].qtd += qtdItens;
+            produtosResumo[h.nome_produto].total += valorTotalContrato;
+
+            // 4. Alimenta a Tabela
+            corpoTabela.innerHTML += `
+                <tr>
+                    <td><strong>${h.nome_produto}</strong><br><small>${qtdItens} un x ${totalDias} dias</small></td>
+                    <td>${h.cliente_nome || 'Cliente'}</td>
+                    <td>R$ ${valorTotalContrato.toFixed(2)}</td>
+                </tr>`;
         });
 
         faturamentoTxt.innerText = faturamentoTotal.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-        totalConcluidasTxt.innerText = qtdTotal;
-
-        Object.keys(produtosResumo).forEach(nome => {
-            const item = produtosResumo[nome];
-            corpoTabela.innerHTML += `
-                <tr>
-                    <td><strong>${nome}</strong></td>
-                    <td>${item.qtd}x</td>
-                    <td>R$ ${item.total.toFixed(2)}</td>
-                </tr>`;
-        });
+        totalConcluidasTxt.innerText = qtdTotalContratos;
 
         if (typeof atualizarGrafico === "function") {
             atualizarGrafico(produtosResumo);
