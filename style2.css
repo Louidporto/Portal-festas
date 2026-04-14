@@ -206,7 +206,7 @@ header {
     font-weight: bold;
     cursor: pointer;
 }
-.btn-novo { background: var(--primary-blue); color: var(--white); border: none; padding: 15px 40px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+.btn-novo { background: var(--primary-blue); color: var(--white); border: none; padding: 15px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 .btn-confirmar { background: darkgreen; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; flex: 2; font-weight: bold; }
 .btn-recusar { background: #fdf2f2; color: var(--danger-red); border: 1px solid #fee2e2; padding: 10px; border-radius: 6px; cursor: pointer; flex: 1; }
 .btn-lixo { background: none; border: none; color: var(--danger-red); cursor: pointer; font-size: 1.1em; }
