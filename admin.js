@@ -110,7 +110,7 @@ document.getElementById('form-cadastro').addEventListener('submit', (e) => {
     
     const nome = document.getElementById('nome-brinquedo').value;
     const imagem = document.getElementById('imagem-brinquedo').value;
-    const descricao = document.getElementById('descricao-brinquedo');
+    const descricao = document.getElementById('descricao-brinquedo').value;
     const valorRaw = document.getElementById('valor-brinquedo').value;
     const categoria = document.getElementById('prod-categoria').value; 
     const estoqueTotal = parseInt(document.getElementById('prod-estoque').value) || 1;
